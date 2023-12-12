@@ -1,0 +1,6 @@
+KUBERNETES
+==============================
+Kubernetes Commands and documentation for exam.
+===================
+Kubectl get pods 
+
