@@ -2,5 +2,204 @@ KUBERNETES
 ==============================
 Kubernetes Commands and documentation for exam.
 ===================
-Kubectl get pods 
+Imp links : https://killercoda.com/cka
+                   https://killer.sh/
+				   
+				  
+==============================
+ISTIO Service Mesh 
+=============================
+To install kiali 
+
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.21/samples/addons/kiali.yaml
+
+to view istio kiali dasboard  - to monitor application in all namespaces of k8cluster
+
+istioctl dashboard kiali
+
+
+====================== Basic commands of K8's =================================
+
+kubectl get pods
+
+kubectl get All
+
+kubectl describe pods <Pod-Name> - to get details and images used to create a pod
+Node:controlplane/192.48.108.6 - which node pods are placed 
+
+kubectl exec -it <sample-pod-name> /bin/bash ----- to login to pod and check application status 
+
+kubectl run nginx --image=nginx  - normal pod creation 
+
+kubectl apply -f pod.yml ---- with pod.yml created a pod
+
+==== Replicat sets =======
+
+kubectl create -f rc-definition.yml
+
+kubectl get replicationcontroller
+kubectl get replicasets
+kubectl describe replicasets
+kubectl delete replicasets <replicaset-name>
+kubectl edit replicasets <new-replica-set>  -------- and need to delete old pods so new replicas will create automatically
+
+kubectl replace -f replicaset-definition.yml
+kubectl scale --replicas=6 -f replicaset-definition.yml
+kubectl scale --replicas=6 replicasets <relicaset_myapp_name>
+
+========== Cluster info commands ===============
+kubectl cluster-info - to get cluster into
+kubectl get pods --namespace=kube-system  --- to view all componentes in master 
+kubectl get componentstatuses ----- to getAPI and controller status
+kubectl logs -n kube-system <api-server-pod-name> kube-apiserver  ---- to check logs of api nod
+
+============= Deployments ====================
+kubectl get deployments
+kubectl create -f deployment-definition-1.yaml
+---- IN deployment yml kind should be with "Deployment "
+apiVersion: apps/v1
+kind: Deployment
+
+Kubectl create deployment <deployment name> --image=<image name> --replicas=3
+
+================ Services =======================
+kubectl get services or kubectl get svc 
+Kubectl describe svc <service_name>
+
+Types of services :
+clusterIp 
+Nodeport
+Load balancing 
+
+Why services are used :
+Loadbalancing
+Service discovery
+Exposing application
+
+==============  Namespaces ========================
+
+Mysql.connect("db-serivce.dev.svc.cluster.local")             <servicenamd.namespace.servicename.domain>
+
+kubectl run redis --image=redis -n finance    to create a pod in a particular name space with name and image name only 
+
+Kubectl get pods --namespcae=kube-system  --------get pods in a particular namespace
+
+Kubectl get create -f <pod-definiton.yml> --namespace=<dev>   --------to create pod to particular name space 
+
+Kubectl config set-context $(kubectl config current-context) --namespace=dev    ---------to move current names pods  to desired namespace example "dev"
+
+kubectl get namespaces ---- to get all namespaces in k8's
+ Kubectl get pods --all-namespaces   --------to get pods in all namespaces 
+
+ResourceQuota - is used to limit the resouces to a particular name space 
+
+Kubectl create -f compute-quota.yml   ----- to create resoursese like cpu, ram for a particular namespace 
+
+==================== Imperative commands =============================
+
+Detailed step to step process what to do 
+
+Create objects
+kubectl run --image=nginx nginx
+kubectl creat deployment --image=nginx nginx 
+kubectl expose deployment nginx --port 80 
+Update objects
+kubectl edit deployment nginx
+kubectl scale deployment nginx --relicas=5
+kubectl set image deployment nginx nginx=nginx:1.18
+kubectl create -f nginx.yaml
+kubectl replace -f nginx.yaml
+kubectl delete -f nginx.yaml
+
+====================== Declative commands ==============================
+
+It is used to make it declarative and applied  changes to the object are in record
+
+Create objects 
+kubectl apply -f nginx.yaml
+kubectl apply -f /path/to/config-files  ----- it will apply change to objects in side the path
+
+Update objects 
+kubectl apply of nginx.yml
+
+===================================================================
+
+kubectl run redis  --image=redis:alpine --dry-run=client -o yaml > redis-pod.yaml
+
+kubectl create -f redis-pod.yaml
+
+POD
+Create an NGINX Pod
+kubectl run nginx --image=nginx
+
+Generate POD Manifest YAML file (-o yaml). Don't create it(--dry-run)
+kubectl run nginx --image=nginx --dry-run=client -o yaml
+
+Deployment
+Create a deployment
+kubectl create deployment --image=nginx nginx
+
+Generate Deployment YAML file (-o yaml). Don't create it(--dry-run)
+kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
+
+Generate Deployment with 4 Replicas
+kubectl create deployment nginx --image=nginx --replicas=4
+
+You can also scale a deployment using the kubectl scale command.
+kubectl scale deployment nginx --replicas=4
+Another way to do this is to save the YAML definition to a file and modify
+kubectl create deployment nginx --image=nginx --dry-run=client -o yaml > nginx-deployment.yaml
+
+You can then update the YAML file with the replicas or any other field before creating the deployment.
+
+Service
+Create a Service named redis-service of type ClusterIP to expose pod redis on port 6379
+kubectl expose pod redis --port=6379 --name redis-service --dry-run=client -o yaml
+(This will automatically use the pod's labels as selectors)
+Or
+kubectl create service clusterip redis --tcp=6379:6379 --dry-run=client -o yaml (This will not use the pods labels as selectors, instead it will assume selectors as app=redis. You cannot pass in selectors as an option. So it does not work very well if your pod has a different label set. So generate the file and modify the selectors before creating the service)
+
+Create a Service named nginx of type NodePort to expose pod nginx's port 80 on port 30080 on the nodes:
+kubectl expose pod nginx --type=NodePort --port=80 --name=nginx-service --dry-run=client -o yaml
+(This will automatically use the pod's labels as selectors, but you cannot specify the node port. You have to generate a definition file and then add the node port in manually before creating the service with the pod.)
+Or
+kubectl create service nodeport nginx --tcp=80:80 --node-port=30080 --dry-run=client -o yaml
+(This will not use the pods labels as selectors)
+Both the above commands have their own challenges. While one of it cannot accept a selector the other cannot accept a node port. I would recommend going with the kubectl expose command. If you need to specify a node port, generate a definition file using the same command and manually input the nodeport before creating the service.
+
+==================================================
+
+========== Labesl and Selectors ========================
+
+kubectl get namespace default --show-labels
+
+kubectl get pods --selector env=dev
+
+kubectl get pods --selector env=dev --no-headers| wc -l 
+
+kubectl get pods --selector bu=finance
+
+kubectl get all --selector env=prod   ---------- to get all detail of particular environment 
+
+kubectl get all --selector env=prod --no-headers | wc -l
+
+kubectl get all --selector env=prod,BU=finance,tier=frontend
+
+
+========== Taints and Tolerants ==========================
+
+Taints are for nodes  - NoSchedule | PreferNoSchedule | NoExecute 
+Tolerants are for pods
+
+Taints and tolerations does not tell a pod to go for a particular node 
+
+Why we will not schedule pod on master there is default taint set on master NoSchedule. To view it run below command.
+ kubectl describe node kubemaster | grep Taint 
+ 
+ 
+ 
+ 
+
+
+
 
