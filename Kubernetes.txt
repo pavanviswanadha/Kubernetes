@@ -1,59 +1,62 @@
-KUBERNETES
-==============================
-Kubernetes Commands and documentation for exam.
-===================
 Imp links : https://killercoda.com/cka
                    https://killer.sh/
 				   
 				  
+				  
 ==============================
-ISTIO Service Mesh 
-=============================
-To install kiali 
+SERVICE MESH
+==============================
+
+Istio is a service mesh whcih is used to manage the network traffic between the different services, by creating a side car container using MTLS.
+
+To istall kiali 
 
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.21/samples/addons/kiali.yaml
 
-to view istio kiali dasboard  - to monitor application in all namespaces of k8cluster
+To view istio kiali dasboard  - to monitor application in all namespaces of k8cluster
 
 istioctl dashboard kiali
 
 
-====================== Basic commands of K8's =================================
+====================== Basic commands =================================
 
 kubectl get pods
 
-kubectl get All
+Kubectl get All
 
-kubectl describe pods <Pod-Name> - to get details and images used to create a pod
-Node:controlplane/192.48.108.6 - which node pods are placed 
+kubectl describe pods newpods-9f9dn - to get details and images used to create a pod
+Node:             controlplane/192.48.108.6 - which node pods are placed 
 
-kubectl exec -it <sample-pod-name> /bin/bash ----- to login to pod and check application status 
+kubectl exec -it <sample-pod-name> /bin/bash ----- To login into a pod and check application status 
 
-kubectl run nginx --image=nginx  - normal pod creation 
+kubectl run nginx --image=nginx  ------ Normal pod creation 
 
-kubectl apply -f pod.yml ---- with pod.yml created a pod
+kubectl apply -f pod.yml ---- creating pod with pod.yml created a pod
 
-==== Replicat sets =======
+================ Replicat sets ===================
 
-kubectl create -f rc-definition.yml
+kubectl create -f rc-definition.yml  ------ create replicat set with yml file 
 
-kubectl get replicationcontroller
+kubectl get replicationcontroller      
 kubectl get replicasets
 kubectl describe replicasets
 kubectl delete replicasets <replicaset-name>
-kubectl edit replicasets <new-replica-set>  -------- and need to delete old pods so new replicas will create automatically
+kubectl edit replicasets <new-replica-set>  -------- if we need to delete old pods so new replicas will create automatically
 
-kubectl replace -f replicaset-definition.yml
-kubectl scale --replicas=6 -f replicaset-definition.yml
-kubectl scale --replicas=6 replicasets <relicaset_myapp_name>
+kubectl replace -f replicaset-definition.yml ----------- TO replace definition file of replicaset
+kubectl scale --replicas=6 -f replicaset-definition.yml  --------------- To apply replicaset in replicaset-definition.yml
+kubectl scale --replicas=6 replicasets <relicaset_myapp_name> ------------ To scale replicasets 
 
 ========== Cluster info commands ===============
-kubectl cluster-info - to get cluster into
-kubectl get pods --namespace=kube-system  --- to view all componentes in master 
+
+kubectl cluster-info  -------- To get cluster into
+kubectl get pods --namespace=kube-system  -------- To view all componentes in master node in kube-system namespace
+DSGUY5NBNJNUHU
 kubectl get componentstatuses ----- to getAPI and controller status
 kubectl logs -n kube-system <api-server-pod-name> kube-apiserver  ---- to check logs of api nod
 
-============= Deployments ====================
+=============Deployments ====================
+
 kubectl get deployments
 kubectl create -f deployment-definition-1.yaml
 ---- IN deployment yml kind should be with "Deployment "
@@ -62,12 +65,12 @@ kind: Deployment
 
 Kubectl create deployment <deployment name> --image=<image name> --replicas=3
 
-================ Services =======================
-kubectl get services or kubectl get svc 
+================Services=======================
+Kubectl get services or kubectl get svc 
 Kubectl describe svc <service_name>
 
 Types of services :
-clusterIp 
+clusterIp
 Nodeport
 Load balancing 
 
@@ -76,7 +79,7 @@ Loadbalancing
 Service discovery
 Exposing application
 
-==============  Namespaces ========================
+==============Namespaces ========================
 
 Mysql.connect("db-serivce.dev.svc.cluster.local")             <servicenamd.namespace.servicename.domain>
 
@@ -100,29 +103,31 @@ Kubectl create -f compute-quota.yml   ----- to create resoursese like cpu, ram f
 Detailed step to step process what to do 
 
 Create objects
-kubectl run --image=nginx nginx
-kubectl creat deployment --image=nginx nginx 
-kubectl expose deployment nginx --port 80 
+Kubectl run --image=nginx nginx
+Kubectl creat deployment --image=nginx nginx 
+Kubectl expose deployment nginx --port 80 
 Update objects
-kubectl edit deployment nginx
-kubectl scale deployment nginx --relicas=5
-kubectl set image deployment nginx nginx=nginx:1.18
-kubectl create -f nginx.yaml
-kubectl replace -f nginx.yaml
-kubectl delete -f nginx.yaml
+Kubectl edit deployment nginx
+Kubectl scale deployment nginx --relicas=5
+Kubectl set image deployment nginx nginx=nginx:1.18
+Kubectl create -f nginx.yaml
+Kubectl replace -f nginx.yaml
+Kubectl delete -f nginx.yaml
 
-====================== Declative commands ==============================
+======================Declative commands==============================
 
 It is used to make it declarative and applied  changes to the object are in record
 
 Create objects 
-kubectl apply -f nginx.yaml
-kubectl apply -f /path/to/config-files  ----- it will apply change to objects in side the path
+Kubectl apply -f nginx.yaml
+Kubectl apply -f /path/to/config-files  ----- it will apply change to objects in side the path
 
 Update objects 
-kubectl apply of nginx.yml
+Kubectl apply of nginx.yml
 
 ===================================================================
+
+
 
 kubectl run redis  --image=redis:alpine --dry-run=client -o yaml > redis-pod.yaml
 
@@ -169,7 +174,7 @@ Both the above commands have their own challenges. While one of it cannot accept
 
 ==================================================
 
-========== Labesl and Selectors ========================
+==========labesl and Selectors========================
 
 kubectl get namespace default --show-labels
 
@@ -186,20 +191,38 @@ kubectl get all --selector env=prod --no-headers | wc -l
 kubectl get all --selector env=prod,BU=finance,tier=frontend
 
 
-========== Taints and Tolerants ==========================
+==========Taints and Tolerants ==========================
 
 Taints are for nodes  - NoSchedule | PreferNoSchedule | NoExecute 
-Tolerants are for pods
+Tolerants are for pods 
+when we are applying tolerants in YAML it should be in "" double quotes.
 
-Taints and tolerations does not tell a pod to go for a particular node 
+Taints and tolerations doesnot tell a pod to go for a particular node. 
 
 Why we will not schedule pod on master there is default taint set on master NoSchedule. To view it run below command.
- kubectl describe node kubemaster | grep Taint 
+kubectl describe node kubemaster | grep Taint 
  
  
- 
- 
+kubectl taint nodes <node-name> key=value:NoSchedule ------ to maintain taint effect on a node 
+kubectl taint nodes node1 app=blue:NoSchedule 
+NoSchedule - which means the pods will not be schedule on the node 
+PreferNoSchedule - which means system will try to not place a pod on the node 
+NoExecute  - which means new pods will not be scheduled and the if any pods will be avicted if the are not tolerate the taint. 
+
+kubectl get nodes
+kubectl describe node node01 | grep -i taint
+kubectl taint nodes node01 spray=mortein:NoSchedule
+kubectl run mosquito  --image=nginx ------ To create a pod with name mosquito and image=nginx
+kubectl run bee --image=nginx --restart=Never  -------It will create a pod a standalone 
+kubectl patch pod bee -p '{"spec": {"tolerations": [{"key": "spray","value": "mortein", "operator": "Equal", "effect": "NoSchedule"}]}}' -----This command patches the bee pod to add a toleration for the taint with the key
+kubectl taint nodes controlplane node-role.kubernetes.io/control-plane:NoSchedule- --------------- To remove taints from a particular node 
 
 
+======================= Node selectors ===================
+Node selectors are use to define pod to create in a particular node utilize the resources of the node with large mermory.
+(it is limited to a particular node and to over come this we have node affinity)
 
+To use node selectors first we need to have the nodes labeled.
+kubectl label nodes <node-name> <label-key>=label value
+kubectl label nodes node1 size=Large
 
