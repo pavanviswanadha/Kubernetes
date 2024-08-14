@@ -33,6 +33,8 @@ kubectl run nginx --image=nginx  ------ Normal pod creation
 
 kubectl apply -f pod.yml ---- creating pod with pod.yml created a pod
 
+kubectl get pod webapp -o yaml > my-new-pod.yaml - to export pod definition to a yaml
+
 ================ Replicat sets ===================
 
 kubectl create -f rc-definition.yml  ------ create replicat set with yml file 
@@ -190,6 +192,10 @@ kubectl get all --selector env=prod --no-headers | wc -l
 
 kubectl get all --selector env=prod,BU=finance,tier=frontend
 
+kubectl label node node01 color=blue ------------to add a new label to a particular node 
+
+kubectl create deployment blue --replicas=3 --image=nginx -------- to create a deployment with image nginx and replicas 3 
+
 
 ==========Taints and Tolerants ==========================
 
@@ -201,6 +207,7 @@ Taints and tolerations doesnot tell a pod to go for a particular node.
 
 Why we will not schedule pod on master there is default taint set on master NoSchedule. To view it run below command.
 kubectl describe node kubemaster | grep Taint 
+kubectl describe node node01 | grep -i taints ------- to get taints on a node 
  
  
 kubectl taint nodes <node-name> key=value:NoSchedule ------ to maintain taint effect on a node 
@@ -223,6 +230,89 @@ Node selectors are use to define pod to create in a particular node utilize the 
 (it is limited to a particular node and to over come this we have node affinity)
 
 To use node selectors first we need to have the nodes labeled.
-kubectl label nodes <node-name> <label-key>=label value
+kubectl label nodes <node-name> <label-key>=<label-value>
 kubectl label nodes node1 size=Large
+
+we need to add nodeSelectors: under spec: with node <label-key>=<label-value>
+
+We need to right "or" and "not" operation with node selector so we have node affinity to fix it.
+
+=====================Node Affinity ==================
+Node Affinity is used to create pods on desired nodes with lables depends upon requirements.
+
+how come if the label was changed in midle for some reasons so they is node affinity type 
+requiredDuringSchedulingIgnoredDuringExecution 
+preferedDuringSchedulingIgnoredDuringExecution
+
+
+====================Daemon Sets=====================
+kubectl get  daemonsets --all-namespaces
+kubectl create deployment elasticsearch --image=registry.k8s.io/fluentd-elasticsearch:1.20 -n kube-system --dry-run=client -o yaml > fluentd.yaml
+kubectl create -f fluentd.yaml
+kubectl apply -f fluentd.yaml
+kubectl delete daemonsets elasticsearch -n kube-system
+
+===============Static Pods ========================
+
+kubectl run --restart=Never --image=busybox static-busybox --dry-run=client -o yaml --command -- sleep 1000 > /etc/kubernetes/manifests/static-busybox.yaml ------- to create a static pod
+kubectl get pods --all-namespaces 
+/etc/kubernetes/manifests/ - in this path we need create pod definitions to create static pods
+kubectl run --restart=Never --image=busybox:1.28.4 static-busybox --dry-run=client -o yaml --command -- sleep 1000 > /etc/kubernetes/manifests/static-busybox.yaml  ------ to update existing image in static pod
+
+TO delete a static pod created we need to follow below steps 
+kubectl get nodes -o wide  --- get the node details and SSH to the node 
+var/lib/kubelet/config.yaml ----- get the static pod manifest file path 
+staticPodPath: /etc/just-to-mess-with-you ---- go to this path and delete the pod definiton file
+
+===================Customize kub-schedulers ==========================
+kubectl get pods -n=kube-system
+kubectl describe pod kube-scheduler-controlplane -n=kube-system
+kubectl get serviceaccount -n kube-system ---- to get services 
+kubectl get clusterrolebinding  
+
+to create a custome scheduler we can use in config file "kubectl create -f /root/my-scheduler-configmap.yaml"
+apiVersion: v1
+data:
+  my-scheduler-config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1
+    kind: KubeSchedulerConfiguration
+    profiles:
+      - schedulerName: my-scheduler
+    leaderElection:
+      leaderElect: false
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: my-scheduler-config
+  namespace: kube-system
+  
+================ scheduler profiles ================
+We can make pod scheduled in priority by using priority class which definied separately 
+
+Below are the shceduling plugins used to schedule a pod depends on requirement.
+Scheduling queue   ---->    Filtering      ---->    Scoring        ---->    Binding
+ PrioritySort     ---->  NodeResourcesFit  ---->  NodeResoursesFit ----> DefaulBinder
+                           NodeName               ImageLocality
+						  NodeUnschedulable 
+						  
+For all scheduling plugins we have some extension points which are used for required purposes like prefilter-filter-postFilter , preScore-Score-postScore, preBind-Bind-PostBind
+
+==============================================================
+Logging and Monitoring 
+==============================================================
+clone -  git clone https://github.com/kodekloudhub/kubernetes-metrics-server.git
+create metrics deployment ------- kubectl create -f .
+kubectl top node - to get utilization of node cpu and memory 
+kubectl top pod  - to get memory utilized by a pod
+kubectl top pod --all-namespaces
+
+
+
+
+
+
+
+
+
+
 
